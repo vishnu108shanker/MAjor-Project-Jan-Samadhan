@@ -687,16 +687,7 @@ This function is called by `GET /api/stats` for each department. The result is w
 ---
 
 ## 👥 Team
-
-| Name | Role |
-|------|------|
-| Suryansh | Lead Developer |
-| Vishnu | Frontend |
-| Muskan | UI/UX |
-| Anshika | Backend |
-| Shivansh | Database |
-| Anoop | Testing |
-
+@the_evil_lord - handling everything from nothing .
 ---
 
 ## 📄 License
