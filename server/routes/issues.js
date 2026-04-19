@@ -1,0 +1,173 @@
+// date - 19/4 basic testing ke liye post route create kiya , aur thunderclient pe testing kri 
+
+
+const express = require("express");
+const router = express.Router();
+
+const Issue = require("../models/Issue");
+const User = require("../models/User");
+
+
+const verifyJWT = require("../middleware/verifyJWT");
+const isAdmin = require("../middleware/isAdmin");
+
+
+// Helper to generate a token like TOK882931
+const generateToken = () =>
+  "TOK" + Math.floor(100000 + Math.random() * 900000);
+
+
+
+// POST /api/issues — just to test mongoose is working
+router.post("/", async (req, res) => {
+  try {
+    const { description, department, location } = req.body;
+
+    const token = generateToken();
+
+    const newIssue = new Issue({
+      token,
+      citizenId: "000000000000000000000001", // fake ID for now
+      description,
+      department,
+      location,
+    });
+
+    await newIssue.save();
+
+    res.status(201).json({
+      success: true,
+      token,
+      message: "Issue saved. Mongoose is working!",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+})
+
+
+module.exports = router;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// // PRODUCTION LEVEL CODE 
+// const express = require("express");
+// const router = express.Router();
+
+// const Issue = require("../models/Issue");
+// const verifyJWT = require("../middleware/verifyJWT");
+// const isAdmin = require("../middleware/isAdmin");
+
+// // Helper to generate a token like TOK882931
+// const generateToken = () =>
+//   "TOK" + Math.floor(100000 + Math.random() * 900000);
+
+// // POST /api/issues — File a new complaint (citizen must be logged in)
+// router.post("/", verifyJWT, async (req, res) => {
+//   try {
+//     const { description, department, location, photoUrl } = req.body;
+
+//     if (!description || !department || !location) {
+//       return res.status(400).json({ error: "description, department, and location are required" });
+//     }
+
+//     const token = generateToken();
+
+//     const newIssue = new Issue({
+//       token,
+//       citizenId: req.user.id,  // comes from verifyJWT, not request body
+//       description,
+//       department,
+//       location,
+//       photoUrl: photoUrl || null,
+//     });
+
+//     await newIssue.save();
+
+//     res.status(201).json({
+//       success: true,
+//       token,
+//       message: "Issue filed successfully. Use your token to track progress.",
+//     });
+//   } catch (error) {
+//     console.error("Error submitting issue:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
+
+// // GET /api/issues/:token — Track issue by token (public, no auth needed)
+// router.get("/:token", async (req, res) => {
+//   try {
+//     const issue = await Issue.findOne({ token: req.params.token });
+
+//     if (!issue) {
+//       return res.status(404).json({ error: "No issue found with that token" });
+//     }
+
+//     res.json({ success: true, issue });
+//   } catch (error) {
+//     console.error("Error fetching issue:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
+
+// // GET /api/issues — Get all issues (admin only)
+// router.get("/", verifyJWT, isAdmin, async (req, res) => {
+//   try {
+//     const issues = await Issue.find().sort({ createdAt: -1 });
+//     res.json({ success: true, issues });
+//   } catch (error) {
+//     console.error("Error fetching issues:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
+
+// // PATCH /api/issues/:id/status — Update issue status (admin only)
+// router.patch("/:id/status", verifyJWT, isAdmin, async (req, res) => {
+//   try {
+//     const { status, officerNotes } = req.body;
+
+//     const validStatuses = ["Submitted", "Assigned", "In Progress", "Resolved"];
+//     if (!validStatuses.includes(status)) {
+//       return res.status(400).json({ error: "Invalid status value" });
+//     }
+
+//     const updateData = { status, officerNotes };
+
+//     // Record the resolution time so the score calculator can use it
+//     if (status === "Resolved") {
+//       updateData.resolvedAt = new Date();
+//     }
+
+//     const issue = await Issue.findByIdAndUpdate(
+//       req.params.id,
+//       updateData,
+//       { new: true }  // return the updated document
+//     );
+
+//     if (!issue) {
+//       return res.status(404).json({ error: "Issue not found" });
+//     }
+
+//     res.json({ success: true, issue });
+//   } catch (error) {
+//     console.error("Error updating status:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
+
+// module.exports = router;
