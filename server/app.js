@@ -30,9 +30,9 @@ mongoose.connect(process.env.MONGODB_URI)
 
 
 // Routes Area 
-// app.use('/api/auth', require('./routes/auth'));
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/issues', require('./routes/issues'));
-// app.use('/api/stats', require('./routes/stats'));
+app.use('/api/stats', require('./routes/stats'));
 // Routes End here 
 
 

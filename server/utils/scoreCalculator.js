@@ -21,3 +21,5 @@ async function getDepartmentScore(department) {
   // 70% weight on resolution rate, 30% on speed
   return Math.round((resolutionRate * 0.7) + (speedScore * 0.3));
 }
+
+module.exports = { getDepartmentScore };

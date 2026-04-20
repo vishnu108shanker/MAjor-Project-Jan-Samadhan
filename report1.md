@@ -58,4 +58,4 @@ Jan Samadhan is a civic grievance and accountability platform for Indian citizen
 
 ---
 
-*Generated on 2026-04-19 by GitHub Copilot (GPT-4.1)*
+*Generated on 2026-04-19 by GitHub Copilot in direction of @the_evil_lord*
