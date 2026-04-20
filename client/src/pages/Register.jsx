@@ -26,6 +26,8 @@ export default function Register() {
 
     try {
       await api.post('/auth/register', form);
+
+      // review in future soon , after registration it should be automatically logged in and token should be stored in local storage and then user should be navigated to the dashboard page but for now we are navigating to the login page after registration
       navigate('/login');
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed. Please try again.');

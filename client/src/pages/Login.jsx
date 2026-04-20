@@ -22,10 +22,49 @@ export default function Login() {
 
     try {
       const response = await api.post('/auth/login', form);
-      login(response.data.token); // stores token + decodes user into context
+       // Fix made to make it more robust - if token is missing or login fails, it will throw an error and show the error message instead of navigating to the report page without a token which would cause issues in subsequent API calls that require authentication
+      // login(response.data.token); // stores token + decodes user into context
+
+      const { token } = response.data;
+      if (!token) throw new Error("Token missing");
+      // login(token);
+
+      // Optional upgrade (not required, but sharp)
+      // Persist login:
+
+// yaad kar ye login fuxn saala useAuth() se import hua hai , iska code udhar hai 
+      login(token);
+      localStorage.setItem("token", token);
+      // And restore on app load.
+       
       navigate('/report');
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed. Please check your credentials.');
+      // setError(err.response?.data?.error || 'Login failed. Please check your credentials.');
+      // Fix made to provide more specific error messages based on the type of error (network, server, validation, etc.) instead of a generic message for all errors. This will help users understand what went wrong and how to fix it (e.g., check credentials vs. try again later).
+      if (err.response) {
+        // Server responded with a status code (4xx, 5xx)
+        const status = err.response.status;
+
+        if (status === 400) {
+          setError("Invalid input. Please check email and password format.");
+        } else if (status === 401) {
+          setError("Incorrect email or password.");
+        } else if (status === 403) {
+          setError("Access denied. You are not authorized.");
+        } else if (status === 500) {
+          setError("Server error. Please try again later.");
+        } else {
+          setError(err.response.data?.error || "Unexpected server response.");
+        }
+
+      } else if (err.request) {
+        // Request made but no response (network issue)
+        setError("No response from server. Check your internet connection.");
+      } else {
+        // Something else happened
+        setError("Something went wrong. Please try again.");
+      }
+
     } finally {
       setLoading(false);
     }

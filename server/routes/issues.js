@@ -1,19 +1,31 @@
 // routes/issues.js
-// Updated: replaced fake hardcoded citizenId with req.user.id from JWT
+// Updated: replaced fake hardcoded citizenId with req.user.id from JWT , updated on 20/4/2026 
 // Added verifyJWT on POST, and all remaining API contract routes.
 
 const express = require("express");
 const router = express.Router();
 
 const Issue = require("../models/Issue");
+// just the type of import changed here 
+// const verifyJWT = require("../middleware/verifyJWT").default;
 const verifyJWT = require("../middleware/verifyJWT");
 const isAdmin = require("../middleware/isAdmin");
 
-// Helper to generate a token like TOK882931
-const generateToken = () =>
-  "TOK" + Math.floor(100000 + Math.random() * 900000);
+// Helper to generate a token like TOK882931 , but in future , will need a better mechanism 20/4(last viewed)
+// const generateToken = () =>
+//   "TOK" + Math.floor(100000 + Math.random() * 900000);
+const generateToken = () => {
+  return (
+    "TOK" +
+    Date.now().toString(36) +   // compact time
+    Math.random().toString(36).slice(2, 6) // random
+  ).toUpperCase();
+};
 
 
+
+
+// needs a review again , to clarify the , placing of the middleware 20/4
 // POST /api/issues — File a new complaint (citizen must be logged in)
 router.post("/", verifyJWT, async (req, res) => {
   try {
@@ -31,7 +43,10 @@ router.post("/", verifyJWT, async (req, res) => {
       description,
       department,
       location,
-      photoUrl: photoUrl || null,
+
+      // photoUrl: photoUrl || null,
+      // Fix on 20/4
+      photoUrl: photoUrl ?? null
     });
 
     await newIssue.save();
@@ -43,6 +58,30 @@ router.post("/", verifyJWT, async (req, res) => {
     });
   } catch (error) {
     console.error("Error submitting issue:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Flow is somewhat like this -
+// Request arrives
+//     ↓
+// verifyJWT runs → invalid? Stop here, return 401
+//     ↓ (if valid)
+// req.user is now { id, role }
+//     ↓
+// The route handler runs, and can use req.user.id
+// to know which citizen is filing the complaint
+
+
+
+// Fix - put before /api/issues/:token , to resolve router conflict 
+// GET /api/issues — Get all issues (admin only)
+router.get("/", verifyJWT, isAdmin, async (req, res) => {
+  try {
+    const issues = await Issue.find().sort({ createdAt: -1 });
+    res.json({ success: true, issues });
+  } catch (error) {
+    console.error("Error fetching issues:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -65,16 +104,7 @@ router.get("/:token", async (req, res) => {
 });
 
 
-// GET /api/issues — Get all issues (admin only)
-router.get("/", verifyJWT, isAdmin, async (req, res) => {
-  try {
-    const issues = await Issue.find().sort({ createdAt: -1 });
-    res.json({ success: true, issues });
-  } catch (error) {
-    console.error("Error fetching issues:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
+
 
 
 // PATCH /api/issues/:id/status — Update issue status (admin only)
@@ -87,7 +117,10 @@ router.patch("/:id/status", verifyJWT, isAdmin, async (req, res) => {
       return res.status(400).json({ error: "Invalid status value" });
     }
 
-    const updateData = { status, officerNotes };
+    // const updateData = { status, officerNotes };
+    const updateData = { status };
+      if (officerNotes !== undefined) updateData.officerNotes = officerNotes;
+      
 
     // Record the resolution time so the score calculator can use it
     if (status === "Resolved") {
@@ -113,6 +146,9 @@ router.patch("/:id/status", verifyJWT, isAdmin, async (req, res) => {
 
 
 module.exports = router;
+
+
+// testing purpose hardcode 
 // ) {
 //     console.error("Error updating status:", error);
 //     res.status(500).json({ error: "Internal server error" });

@@ -7,25 +7,23 @@ require('dotenv').config() ;
 console.log("Checking environment variable:", process.env.MONGODB_URI);
 
 const app = express() ;
-
 // console.log(process.env.PORT) ;
 
 
 // sabse pehle helmet lagao 
 app.use(helmet()) ;
-
 // phir morgan lagao jo saare logs record karega 
 app.use(morgan('dev')) ;
-
 // fir cors laga ke usme forntend wale website ko access do 
 app.use(cors({origin:process.env.CLIENT_URL })) ;
-
 app.use(express.json()) ;
+
+
 
 // connect to the mongo db 
 mongoose.connect(process.env.MONGODB_URI)
 .then(() => console.log('Mongo db is connected 😁🤠'))
-.catch(err => console.error('Db connection me error✂️ :' , err ))
+.catch(err => console.error('Db connection me ERROR ✂️ :' , err ))
 
 
 
